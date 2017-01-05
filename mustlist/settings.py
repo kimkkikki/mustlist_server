@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'api'
 ]
 
 MIDDLEWARE = [
@@ -79,7 +80,7 @@ DATABASES = {
         'NAME': 'mustlist',
         'USER': 'mustlist',
         'PASSWORD': '23krq4',
-        'HOST': '54.78.200.147',
+        'HOST': 'localhost',
         'PORT': '5432'
     }
 }

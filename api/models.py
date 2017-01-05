@@ -5,10 +5,10 @@ import uuid
 class User(models.Model):
     class Meta:
         db_table = 'user'
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
-    key = models.UUIDField(default=uuid.uuid4())
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    key = models.UUIDField(default=uuid.uuid4)
     reg_date = models.DateTimeField(auto_now_add=True)
-    device_id = models.CharField(null=True)
+    device_id = models.CharField(null=True, max_length=100)
     point = models.IntegerField(default=0)
 
 
@@ -39,9 +39,9 @@ class MustCheck(models.Model):
 class Purchase(models.Model):
     class Meta:
         db_table = 'purchase'
-    developer_payload = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
+    developer_payload = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user_id = models.ForeignKey(User)
-    itemType = models.CharField(null=True)
+    itemType = models.CharField(null=True, max_length=10)
     purchase_time = models.DateTimeField(null=True)
-    order_id = models.CharField(null=True)
+    order_id = models.CharField(null=True, max_length=100)
     original_json = models.TextField(null=True)
