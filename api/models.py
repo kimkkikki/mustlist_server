@@ -2,10 +2,21 @@ from django.db import models
 import uuid
 
 
+class User(models.Model):
+    class Meta:
+        db_table = 'user'
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
+    key = models.UUIDField(default=uuid.uuid4())
+    reg_date = models.DateTimeField(auto_now_add=True)
+    device_id = models.CharField(null=True)
+    point = models.IntegerField(default=0)
+
+
 class Must(models.Model):
     class Meta:
         db_table = 'must'
     index = models.AutoField(primary_key=True)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
@@ -28,8 +39,8 @@ class MustCheck(models.Model):
 class Purchase(models.Model):
     class Meta:
         db_table = 'purchase'
-    developer_payload = models.UUIDField(default=uuid.uuid4())
-    id = models.CharField(null=True)
+    developer_payload = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
+    user_id = models.ForeignKey(User)
     itemType = models.CharField(null=True)
     purchase_time = models.DateTimeField(null=True)
     order_id = models.CharField(null=True)

@@ -75,8 +75,12 @@ WSGI_APPLICATION = 'mustlist.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'mustlist',
+        'USER': 'mustlist',
+        'PASSWORD': '23krq4',
+        'HOST': '54.78.200.147',
+        'PORT': '5432'
     }
 }
 
@@ -103,9 +107,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+DATABASE_OPTION = {'charset': 'utf8'}
 
-TIME_ZONE = 'UTC'
+LANGUAGE_CODE = 'ko-kr'
+
+TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 
