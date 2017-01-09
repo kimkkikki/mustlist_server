@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'api'
 ]
 
@@ -81,7 +82,7 @@ DATABASES = {
         'USER': 'mustlist',
         'PASSWORD': '23krq4',
         'HOST': 'localhost',
-        'PORT': '5432'
+        'PORT': 5432
     }
 }
 

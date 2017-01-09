@@ -1,7 +1,5 @@
-from ..models import User
-from django.http import JsonResponse
-import json
-from django.core.serializers.json import DjangoJSONEncoder
+from ..models import User, UserSerializer
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 
@@ -11,21 +9,27 @@ def user(request):
         return get(request)
 
     elif request.method == 'POST':
-        return post(request)
+        return post()
 
 
 def get(request):
-    print(request.content_params)
+    if 'HTTP_ID' not in request.META or 'HTTP_KEY' not in request.META:
+        return HttpResponse(status=401)
+    else:
+        user_id = request.META['HTTP_ID']
+        user_key = request.META['HTTP_KEY']
 
-    user_id = request.content_params
-    user = User.objects.filter(id=user_id).values()
+    login_user = User.objects.get(id=user_id, key=user_key)
+    serializer = UserSerializer(login_user, many=False)
+    print(serializer.data)
 
-    return JsonResponse(json.dumps(user), cls=DjangoJSONEncoder)
+    return JsonResponse(serializer.data)
 
 
-def post(request):
+def post():
     new_user = User()
     new_user.save()
 
-    print(new_user)
-    return JsonResponse(json.dumps(new_user), cls=DjangoJSONEncoder)
+    serializer = UserSerializer(new_user)
+    print(serializer.data)
+    return JsonResponse(serializer.data)
