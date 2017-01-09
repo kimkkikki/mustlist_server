@@ -45,8 +45,9 @@ class MustCheck(models.Model):
         db_table = 'must_check'
     index = models.AutoField(primary_key=True)
     must = models.ForeignKey(Must)
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateField()
     check_yn = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True, null=True)
 
 
 class Purchase(models.Model):

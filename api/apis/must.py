@@ -1,4 +1,5 @@
-from ..models import Must, MustSerializer
+from django.core.exceptions import ObjectDoesNotExist
+from ..models import Must, MustSerializer, MustCheck
 from . import util
 from django.http import HttpResponse
 from rest_framework.parsers import JSONParser
@@ -31,14 +32,24 @@ def must_list(request):
     return util.JSONResponse(serializer.data)
 
 
+
 def create_must(request):
     data = JSONParser().parse(request)
     data['user'] = request.META['HTTP_ID']
     serializer = MustSerializer(data=data)
     print(serializer)
     if serializer.is_valid():
-        serializer.save()
-        # TODO MustCheck 생성 추가해야 함
+        print(serializer.validated_data)
+        start_date = serializer.validated_data['start_date']
+        end_date = serializer.validated_data['end_date']
+
+        must = serializer.save()
+        for date in util.date_range(start_date, end_date):
+            must_check = MustCheck()
+            must_check.must = must
+            must_check.date = date
+            must_check.save()
+
         return HttpResponse(status=201)
 
     return util.JSONResponse(serializer.errors, status=400)
@@ -59,3 +70,26 @@ def must_history(request):
 
     else:
         return HttpResponse(status=404)
+
+
+def check_must(request, index):
+    today = datetime.datetime.now().strftime('%Y-%m-%d')
+    print(today)
+
+    try:
+        must_check = MustCheck.objects.get(must_id=index, date=today)
+        print(must_check)
+        if must_check.check_yn == False:
+            must_check.check_yn = True
+            must_check.save()
+
+        # Already Checked
+        else:
+            return HttpResponse(status=204)
+
+    # Not Found
+    except ObjectDoesNotExist:
+        return HttpResponse(status=400)
+
+    # Success
+    return HttpResponse(status=200)
