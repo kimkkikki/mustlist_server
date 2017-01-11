@@ -78,8 +78,9 @@ def must_history(request):
         return HttpResponse(status=404)
 
 
+@csrf_exempt
 def must_preview(request):
-    if request.method == 'GET':
+    if request.method == 'POST':
         if 'HTTP_ID' not in request.META or 'HTTP_KEY' not in request.META:
             return HttpResponse(status=401)
         try:
@@ -87,12 +88,21 @@ def must_preview(request):
         except ObjectDoesNotExist:
             return HttpResponse(status=400)
 
-    data = JSONParser().parse(request)
-    serializer = MustSerializer(data=data)
-    if serializer.is_valid():
-        print(serializer.validated_data)
+        data = JSONParser().parse(request)
+        data['user'] = request.META['HTTP_ID']
+        print(data)
+        serializer = MustSerializer(data=data)
+        if serializer.is_valid():
+            print(serializer.data)
 
-    return
+            point = util.must_point(data['start_date'], data['end_date'], data['deposit'])
+            data['default_point'] = point
+
+            return util.JSONResponse(data)
+        return HttpResponse(status=400)
+
+    else:
+        return HttpResponse(status=400)
 
 
 def check_must(request, index):
