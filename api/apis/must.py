@@ -1,5 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
-from ..models import Must, MustSerializer, MustCheck
+from ..models import Must, MustSerializer, MustCheck, User
 from . import util
 from django.http import HttpResponse
 from rest_framework.parsers import JSONParser
@@ -10,22 +10,26 @@ import datetime
 @csrf_exempt
 def must(request):
     if 'HTTP_ID' not in request.META or 'HTTP_KEY' not in request.META:
+        return HttpResponse(status=400)
+
+    try:
+        user = User.objects.get(id=request.META['HTTP_ID'], key=request.META['HTTP_KEY'])
+    except ObjectDoesNotExist:
         return HttpResponse(status=401)
+
     if request.method == 'GET':
-        return must_list(request)
+        return must_list(request, user)
     elif request.method == 'POST':
         if request.body:
-            return create_must(request)
+            return create_must(request, user)
         else:
             return HttpResponse(status=204)
     else:
         return HttpResponse(status=404)
 
 
-def must_list(request):
-    user_id = request.META['HTTP_ID']
-
-    results = Must.objects.filter(user_id=user_id, end_date__gte=datetime.datetime.now())
+def must_list(request, user):
+    results = Must.objects.filter(user_id=user.id, end_date__gte=datetime.datetime.now())
     serializer = MustSerializer(results, many=True)
     print(serializer.data)
 
@@ -33,9 +37,9 @@ def must_list(request):
 
 
 
-def create_must(request):
+def create_must(request, user):
     data = JSONParser().parse(request)
-    data['user'] = request.META['HTTP_ID']
+    data['user'] = user.id
     serializer = MustSerializer(data=data)
     print(serializer)
     if serializer.is_valid():
@@ -59,10 +63,12 @@ def must_history(request):
     if request.method == 'GET':
         if 'HTTP_ID' not in request.META or 'HTTP_KEY' not in request.META:
             return HttpResponse(status=401)
+        try:
+            user = User.objects.get(id=request.META['HTTP_ID'], key=request.META['HTTP_KEY'])
+        except ObjectDoesNotExist:
+            return HttpResponse(status=400)
 
-        user_id = request.META['HTTP_ID']
-
-        results = Must.objects.filter(user_id=user_id, end_date__lt=datetime.datetime.now())
+        results = Must.objects.filter(user_id=user.id, end_date__lt=datetime.datetime.now())
         serializer = MustSerializer(results, many=True)
         print(serializer.data)
 
@@ -70,6 +76,23 @@ def must_history(request):
 
     else:
         return HttpResponse(status=404)
+
+
+def must_preview(request):
+    if request.method == 'GET':
+        if 'HTTP_ID' not in request.META or 'HTTP_KEY' not in request.META:
+            return HttpResponse(status=401)
+        try:
+            user = User.objects.get(id=request.META['HTTP_ID'], key=request.META['HTTP_KEY'])
+        except ObjectDoesNotExist:
+            return HttpResponse(status=400)
+
+    data = JSONParser().parse(request)
+    serializer = MustSerializer(data=data)
+    if serializer.is_valid():
+        print(serializer.validated_data)
+
+    return
 
 
 def check_must(request, index):

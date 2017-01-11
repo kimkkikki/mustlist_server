@@ -19,15 +19,35 @@ class UserSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class Purchase(models.Model):
+    class Meta:
+        db_table = 'purchase'
+    developer_payload = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User)
+    itemType = models.CharField(null=True, max_length=10)
+    purchase_time = models.DateTimeField(null=True)
+    order_id = models.CharField(null=True, max_length=100)
+    original_json = models.TextField(null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+
+class PurchaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Purchase
+        fields = '__all__'
+
+
 class Must(models.Model):
     class Meta:
         db_table = 'must'
     index = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
+    purchase = models.ForeignKey(Purchase, null=True)
     title = models.CharField(max_length=100)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField(db_index=True)
-    amount = models.IntegerField(default=0)
+    deposit = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     default_point = models.IntegerField(default=0)
     success_point = models.IntegerField(default=0)
@@ -48,24 +68,7 @@ class MustCheck(models.Model):
     date = models.DateField()
     check_yn = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True, null=True)
-
-
-class Purchase(models.Model):
-    class Meta:
-        db_table = 'purchase'
-    developer_payload = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User)
-    itemType = models.CharField(null=True, max_length=10)
-    purchase_time = models.DateTimeField(null=True)
-    order_id = models.CharField(null=True, max_length=100)
-    original_json = models.TextField(null=True)
-    created = models.DateTimeField(auto_now_add=True)
-
-
-class PurchaseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Purchase
-        fields = '__all__'
+    updated = models.DateTimeField(auto_now=True)
 
 
 class Notice(models.Model):

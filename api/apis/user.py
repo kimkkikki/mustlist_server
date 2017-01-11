@@ -1,6 +1,7 @@
 from ..models import User, UserSerializer
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import ObjectDoesNotExist
 
 
 @csrf_exempt
@@ -14,12 +15,13 @@ def user(request):
 
 def get(request):
     if 'HTTP_ID' not in request.META or 'HTTP_KEY' not in request.META:
-        return HttpResponse(status=401)
-    else:
-        user_id = request.META['HTTP_ID']
-        user_key = request.META['HTTP_KEY']
+        return HttpResponse(status=400)
 
-    login_user = User.objects.get(id=user_id, key=user_key)
+    try:
+        login_user = User.objects.get(id=request.META['HTTP_ID'], key=request.META['HTTP_KEY'])
+    except ObjectDoesNotExist:
+        return HttpResponse(status=401)
+
     serializer = UserSerializer(login_user, many=False)
     print(serializer.data)
 
