@@ -31,7 +31,8 @@ class Must(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     default_point = models.IntegerField(default=0)
     success_point = models.IntegerField(default=0)
-    success_yn = models.BooleanField(default=False)
+    success = models.BooleanField(default=False)
+    end = models.BooleanField(default=False)
 
 
 class MustSerializer(serializers.ModelSerializer):
@@ -66,7 +67,7 @@ class MustCheck(models.Model):
     index = models.AutoField(primary_key=True)
     must = models.ForeignKey(Must)
     date = models.DateField()
-    check_yn = models.BooleanField(default=False)
+    check = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True, null=True)
     updated = models.DateTimeField(auto_now=True)
 

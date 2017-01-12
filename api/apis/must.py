@@ -29,7 +29,8 @@ def must(request):
 
 
 def must_list(user):
-    musts = Must.objects.filter(user_id=user.id, end_date__gte=datetime.datetime.now())
+    # musts = Must.objects.filter(user_id=user.id, end_date__gte=datetime.datetime.now())
+    musts = Must.objects.filter(user_id=user.id).order_by('end_date')
     must_check_list = MustCheck.objects.filter(must__in=musts)
 
     serializer = MustSerializer(musts, many=True)
@@ -37,10 +38,27 @@ def must_list(user):
 
     print(serializer.data)
     for must_object in serializer.data:
+        end_date = datetime.datetime.strptime(must_object['end_date'], '%Y-%m-%dT%H:%M:%SZ')
+
+        # Update End Must
+        if (end_date < datetime.datetime.now() and must_object['end'] == False):
+            update_must = Must.objects.get(index=must_object['index'])
+            total_count = MustCheck.objects.filter(must=update_must).count()
+            check_count = MustCheck.objects.filter(must=update_must, check=True).count()
+
+            # 80% 이상일때 성공 표기
+            if total_count * 0.8 < check_count:
+                update_must.success = True
+                print('Must Success')
+
+            update_must.end = True
+            update_must.save()
+            print('update Success')
+
         check = False
         for must_check in must_check_list:
             if must_check.must_id == must_object['index'] and str(must_check.date) == today:
-                check = must_check.check_yn
+                check = must_check.check
 
         must_object['check'] = check
 
@@ -121,8 +139,8 @@ def check_must(request, index):
     try:
         must_check = MustCheck.objects.get(must_id=index, date=util.get_today())
         print(must_check)
-        if must_check.check_yn == False:
-            must_check.check_yn = True
+        if must_check.check == False:
+            must_check.check = True
             must_check.save()
 
         # Already Checked
