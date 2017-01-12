@@ -39,15 +39,15 @@ def must_list(user):
     print(serializer.data)
     for must_object in serializer.data:
         end_date = datetime.datetime.strptime(must_object['end_date'], '%Y-%m-%dT%H:%M:%SZ')
+        days = util.days(must_object['start_date'], must_object['end_date'])
+        check_count = MustCheck.objects.filter(must_id=must_object['index']).count()
 
         # Update End Must
         if (end_date < datetime.datetime.now() and must_object['end'] == False):
             update_must = Must.objects.get(index=must_object['index'])
-            total_count = MustCheck.objects.filter(must=update_must).count()
-            check_count = MustCheck.objects.filter(must=update_must, check=True).count()
 
             # 80% 이상일때 성공 표기
-            if total_count * 0.8 < check_count:
+            if days * 0.8 < check_count:
                 update_must.success = True
                 print('Must Success')
 
@@ -58,9 +58,11 @@ def must_list(user):
         check = False
         for must_check in must_check_list:
             if must_check.must_id == must_object['index'] and str(must_check.date) == today:
-                check = must_check.check
+                check = True
 
         must_object['check'] = check
+        must_object['check_count'] = check_count
+        must_object['total_count'] = days
 
     return util.JSONResponse(serializer.data)
 
@@ -72,15 +74,7 @@ def create_must(request, user):
     print(serializer)
     if serializer.is_valid():
         print(serializer.validated_data)
-        start_date = serializer.validated_data['start_date']
-        end_date = serializer.validated_data['end_date']
-
-        must_object = serializer.save()
-        for date in util.date_range(start_date, end_date):
-            must_check = MustCheck()
-            must_check.must = must_object
-            must_check.date = date
-            must_check.save()
+        serializer.save()
 
         return HttpResponse(status=201)
 
@@ -135,20 +129,17 @@ def must_preview(request):
 def check_must(request, index):
     # TODO: User Check Required
 
+    today = util.get_today()
+
     try:
-        must_check = MustCheck.objects.get(must_id=index, date=util.get_today())
+        must_check = MustCheck.objects.get(must_id=index, date=today)
         print(must_check)
-        if must_check.check == False:
-            must_check.check = True
-            must_check.save()
 
         # Already Checked
-        else:
-            return HttpResponse(status=204)
+        return HttpResponse(status=204)
 
-    # Not Found
     except ObjectDoesNotExist:
-        return HttpResponse(status=400)
-
-    # Success
-    return HttpResponse(status=200)
+        # Success
+        must_check = MustCheck(must_id=index, date=today)
+        must_check.save()
+        return HttpResponse(status=200)

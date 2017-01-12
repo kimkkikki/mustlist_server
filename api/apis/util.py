@@ -16,9 +16,18 @@ def date_range(start_date, end_date):
         yield start_date + timedelta(n)
 
 
+def try_parsing_date(text):
+    for fmt in ('%Y-%m-%dT%H:%M:%S', '%Y-%m-%dT%H:%M:%SZ'):
+        try:
+            return datetime.datetime.strptime(text, fmt)
+        except ValueError:
+            pass
+    raise ValueError('no valid date format found')
+
+
 def must_point(start_date, end_date, deposit):
-    start_date = datetime.datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%S')
-    end_date = datetime.datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%S')
+    start_date = try_parsing_date(start_date)
+    end_date = try_parsing_date(end_date)
 
     date_diff = end_date - start_date
 
@@ -28,8 +37,8 @@ def must_point(start_date, end_date, deposit):
 
 
 def days(start_date, end_date):
-    start_date = datetime.datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%S')
-    end_date = datetime.datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%S')
+    start_date = try_parsing_date(start_date)
+    end_date = try_parsing_date(end_date)
 
     date_diff = end_date - start_date
 
