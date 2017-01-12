@@ -122,9 +122,8 @@ def must_preview(request):
         serializer = MustSerializer(data=data)
         if serializer.is_valid():
             print(serializer.data)
-
-            point = util.must_point(data['start_date'], data['end_date'], data['deposit'])
-            data['default_point'] = point
+            data['default_point'] = util.must_point(data['start_date'], data['end_date'], data['deposit'])
+            data['days'] = util.days(data['start_date'], data['end_date'])
 
             return util.JSONResponse(data)
         return HttpResponse(status=400)
