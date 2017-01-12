@@ -18,7 +18,7 @@ def must(request):
         return HttpResponse(status=401)
 
     if request.method == 'GET':
-        return must_list(request, user)
+        return must_list(user)
     elif request.method == 'POST':
         if request.body:
             return create_must(request, user)
@@ -28,13 +28,23 @@ def must(request):
         return HttpResponse(status=404)
 
 
-def must_list(request, user):
-    results = Must.objects.filter(user_id=user.id, end_date__gte=datetime.datetime.now())
-    serializer = MustSerializer(results, many=True)
+def must_list(user):
+    musts = Must.objects.filter(user_id=user.id, end_date__gte=datetime.datetime.now())
+    must_check_list = MustCheck.objects.filter(must__in=musts)
+
+    serializer = MustSerializer(musts, many=True)
+    today = util.get_today()
+
     print(serializer.data)
+    for must_object in serializer.data:
+        check = False
+        for must_check in must_check_list:
+            if must_check.must_id == must_object['index'] and str(must_check.date) == today:
+                check = must_check.check_yn
+
+        must_object['check'] = check
 
     return util.JSONResponse(serializer.data)
-
 
 
 def create_must(request, user):
@@ -47,10 +57,10 @@ def create_must(request, user):
         start_date = serializer.validated_data['start_date']
         end_date = serializer.validated_data['end_date']
 
-        must = serializer.save()
+        must_object = serializer.save()
         for date in util.date_range(start_date, end_date):
             must_check = MustCheck()
-            must_check.must = must
+            must_check.must = must_object
             must_check.date = date
             must_check.save()
 
@@ -89,7 +99,7 @@ def must_preview(request):
             return HttpResponse(status=400)
 
         data = JSONParser().parse(request)
-        data['user'] = request.META['HTTP_ID']
+        data['user'] = user.id
         print(data)
         serializer = MustSerializer(data=data)
         if serializer.is_valid():
@@ -106,11 +116,10 @@ def must_preview(request):
 
 
 def check_must(request, index):
-    today = datetime.datetime.now().strftime('%Y-%m-%d')
-    print(today)
+    # TODO: User Check Required
 
     try:
-        must_check = MustCheck.objects.get(must_id=index, date=today)
+        must_check = MustCheck.objects.get(must_id=index, date=util.get_today())
         print(must_check)
         if must_check.check_yn == False:
             must_check.check_yn = True

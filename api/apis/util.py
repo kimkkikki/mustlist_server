@@ -25,3 +25,8 @@ def must_point(start_date, end_date, deposit):
     point = deposit * 100 + (date_diff.days + 1) * 10
 
     return point
+
+
+def get_today():
+    today = datetime.datetime.now().strftime('%Y-%m-%d')
+    return today
