@@ -1,3 +1,4 @@
+from rest_framework.exceptions import ParseError
 from ..models import User, UserSerializer
 from django.http import JsonResponse, HttpResponse
 from . import util
@@ -31,10 +32,10 @@ def get(request):
 
 
 def post(request):
-    if not request.POST:
+    try:
+        data = JSONParser().parse(request)
+    except ParseError:
         return HttpResponse(status=400)
-
-    data = JSONParser().parse(request)
 
     try:
         user = User.objects.get(id=data['id'])
