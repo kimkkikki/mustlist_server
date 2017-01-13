@@ -1,5 +1,7 @@
 from ..models import User, UserSerializer
 from django.http import JsonResponse, HttpResponse
+from . import util
+from rest_framework.parsers import JSONParser
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -10,7 +12,7 @@ def user(request):
         return get(request)
 
     elif request.method == 'POST':
-        return post()
+        return post(request)
 
 
 def get(request):
@@ -28,10 +30,22 @@ def get(request):
     return JsonResponse(serializer.data)
 
 
-def post():
-    new_user = User()
-    new_user.save()
+def post(request):
+    if not request.POST:
+        return HttpResponse(status=400)
 
-    serializer = UserSerializer(new_user)
-    print(serializer.data)
-    return JsonResponse(serializer.data)
+    data = JSONParser().parse(request)
+
+    try:
+        user = User.objects.get(id=data['id'])
+    except ObjectDoesNotExist:
+        serializer = UserSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return util.JSONResponse(serializer.data, status=201)
+
+        else:
+            return HttpResponse(status=400)
+
+    serializer = UserSerializer(user)
+    return util.JSONResponse(serializer.data, status=200)

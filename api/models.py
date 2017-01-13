@@ -6,10 +6,11 @@ from rest_framework import serializers
 class User(models.Model):
     class Meta:
         db_table = 'user'
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(primary_key=True, max_length=50, default=uuid.uuid4)
     key = models.UUIDField(default=uuid.uuid4)
+    email = models.CharField(max_length=50, null=True)
     created = models.DateTimeField(auto_now_add=True)
-    device_id = models.CharField(null=True, max_length=100)
+    device_id = models.CharField(max_length=100, null=True)
     point = models.IntegerField(default=0)
 
 
