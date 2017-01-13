@@ -34,7 +34,7 @@ def must_list(user):
     must_check_list = MustCheck.objects.filter(must__in=musts)
 
     serializer = MustSerializer(musts, many=True)
-    today = util.get_today()
+    today = util.get_today_string()
 
     print(serializer.data)
     for must_object in serializer.data:
@@ -127,12 +127,23 @@ def must_preview(request):
 
 
 def check_must(request, index):
-    # TODO: User Check Required
+    if 'HTTP_ID' not in request.META or 'HTTP_KEY' not in request.META:
+        return HttpResponse(status=401)
+    try:
+        user = User.objects.get(id=request.META['HTTP_ID'], key=request.META['HTTP_KEY'])
+    except ObjectDoesNotExist:
+        return HttpResponse(status=400)
 
-    today = util.get_today()
+    today = util.get_today_string()
 
     try:
-        must_check = MustCheck.objects.get(must_id=index, date=today)
+        must = Must.objects.get(index=index, user=user, start_date__lte=util.get_today(), end_date__gte=util.get_today())
+    except ObjectDoesNotExist:
+        # 기간이 지남
+        return HttpResponse(status=208)
+
+    try:
+        must_check = MustCheck.objects.get(must=must, date=today)
         print(must_check)
 
         # Already Checked

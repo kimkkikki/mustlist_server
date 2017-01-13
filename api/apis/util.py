@@ -45,6 +45,10 @@ def days(start_date, end_date):
     return date_diff.days + 1
 
 
-def get_today():
+def get_today_string():
     today = datetime.datetime.now().strftime('%Y-%m-%d')
     return today
+
+
+def get_today():
+    return datetime.datetime.utcnow()
