@@ -76,6 +76,7 @@ class Notice(models.Model):
     class Meta:
         db_table = 'notice'
     id = models.AutoField(primary_key=True, editable=False)
+    type = models.IntegerField(default=0)
     title = models.CharField(max_length=100)
     contents = models.TextField()
     created = models.DateTimeField(auto_now_add=True)

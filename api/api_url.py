@@ -8,5 +8,5 @@ urlpatterns = [
     url(r'must/preview$', must.must_preview),
     url(r'must/(?P<index>\d+)$', must.check_must),
     url(r'pay$', pay.pay),
-    url(r'notice', notice.notice),
+    url(r'notice$', notice.notice),
 ]

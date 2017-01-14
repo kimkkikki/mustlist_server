@@ -39,6 +39,11 @@ def post(request):
 
     try:
         user = User.objects.get(id=data['id'])
+        serializer = UserSerializer(user, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return util.JSONResponse(serializer.data, status=200)
+
     except ObjectDoesNotExist:
         serializer = UserSerializer(data=data)
         if serializer.is_valid():
