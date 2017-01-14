@@ -4,6 +4,9 @@ from django.http import HttpResponse
 
 
 def notice(request):
+    if 'HTTP_ID' not in request.META or 'HTTP_KEY' not in request.META:
+        return HttpResponse(status=400)
+
     if request.method == 'GET':
         return notice_get()
 

@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from .apis import user, must, pay
+from .apis import user, must, pay, notice
 
 urlpatterns = [
     url(r'user$', user.user),
@@ -8,4 +8,5 @@ urlpatterns = [
     url(r'must/preview$', must.must_preview),
     url(r'must/(?P<index>\d+)$', must.check_must),
     url(r'pay$', pay.pay),
+    url(r'notice', notice.notice),
 ]
