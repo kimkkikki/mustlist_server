@@ -10,7 +10,7 @@ class User(models.Model):
     key = models.UUIDField(default=uuid.uuid4)
     email = models.CharField(max_length=50, null=True)
     created = models.DateTimeField(auto_now_add=True)
-    device_id = models.CharField(max_length=100, null=True)
+    device_id = models.TextField(null=True)
     point = models.IntegerField(default=0)
 
 
