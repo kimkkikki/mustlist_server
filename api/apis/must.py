@@ -29,7 +29,7 @@ def must(request):
 
 
 def must_list(user):
-    # musts = Must.objects.filter(user_id=user.id, end_date__gte=datetime.datetime.now())
+    # musts = Must.objects.filter(user_id=user.id, end_date__gte=datetime.datetime.utcnow())
     musts = Must.objects.filter(user_id=user.id).order_by('end_date')
     must_check_list = MustCheck.objects.filter(must__in=musts)
 
@@ -43,7 +43,7 @@ def must_list(user):
         check_count = MustCheck.objects.filter(must_id=must_object['index']).count()
 
         # Update End Must
-        if (end_date < datetime.datetime.now() and must_object['end'] == False):
+        if (end_date < datetime.datetime.utcnow() and must_object['end'] == False):
             update_must = Must.objects.get(index=must_object['index'])
 
             # 80% 이상일때 성공 표기
@@ -90,7 +90,7 @@ def must_history(request):
         except ObjectDoesNotExist:
             return HttpResponse(status=400)
 
-        results = Must.objects.filter(user_id=user.id, end_date__lt=datetime.datetime.now())
+        results = Must.objects.filter(user_id=user.id, end_date__lt=datetime.datetime.utcnow())
         serializer = MustSerializer(results, many=True)
         print(serializer.data)
 
