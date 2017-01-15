@@ -17,7 +17,7 @@ def date_range(start_date, end_date):
 
 
 def try_parsing_date(text):
-    for fmt in ('%Y-%m-%dT%H:%M:%S', '%Y-%m-%dT%H:%M:%SZ'):
+    for fmt in ('%Y-%m-%dT%H:%M:%S', '%Y-%m-%dT%H:%M:%SZ', '%Y-%m-%dT%H:%M:%S%z'):
         try:
             return datetime.datetime.strptime(text, fmt)
         except ValueError:
