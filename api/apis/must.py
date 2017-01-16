@@ -31,7 +31,11 @@ def must(request):
 def must_list(user):
     # musts = Must.objects.filter(user_id=user.id, end_date__gte=datetime.datetime.utcnow())
     musts = Must.objects.filter(user_id=user.id).order_by('end_date')
-    must_check_list = MustCheck.objects.filter(must__in=musts)
+
+    today_min = datetime.datetime.combine(datetime.date.today(), datetime.time.min)
+    today_max = datetime.datetime.combine(datetime.date.today(), datetime.time.max)
+
+    must_check_list = MustCheck.objects.filter(must__in=musts, date__range=(today_min, today_max))
 
     serializer = MustSerializer(musts, many=True)
     today = util.get_today_string()
@@ -57,6 +61,7 @@ def must_list(user):
 
         check = False
         for must_check in must_check_list:
+            print(must_check.date)
             if must_check.must_id == must_object['index'] and str(must_check.date) == today:
                 check = True
 
@@ -137,7 +142,7 @@ def check_must(request, index):
     today = util.get_today_string()
 
     try:
-        must = Must.objects.get(index=index, user=user, start_date__lte=util.get_today(), end_date__gte=util.get_today())
+        must = Must.objects.get(index=index, user=user, start_date__lte=datetime.datetime.utcnow(), end_date__gte=datetime.datetime.utcnow())
     except ObjectDoesNotExist:
         # 기간이 지남
         return HttpResponse(status=208)

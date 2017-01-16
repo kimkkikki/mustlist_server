@@ -48,7 +48,3 @@ def days(start_date, end_date):
 def get_today_string():
     today = datetime.datetime.utcnow().strftime('%Y-%m-%d')
     return today
-
-
-def get_today():
-    return datetime.datetime.utcnow()
