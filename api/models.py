@@ -42,23 +42,24 @@ class MustSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class Purchase(models.Model):
+class Pay(models.Model):
     class Meta:
-        db_table = 'purchase'
-    developer_payload = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+        db_table = 'pay'
+    id = models.AutoField(primary_key=True, editable=False)
     user = models.ForeignKey(User)
-    must = models.ForeignKey(Must, null=True)
-    itemType = models.CharField(null=True, max_length=10)
-    purchase_time = models.DateTimeField(null=True)
-    order_id = models.CharField(null=True, max_length=100)
-    original_json = models.TextField(null=True)
+    must = models.ForeignKey(Must)
+    product_id = models.CharField(max_length=200)
+    order_id = models.CharField(max_length=200)
+    token = models.TextField()
+    date = models.DateTimeField(null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    refund = models.BooleanField(default=False)
 
 
-class PurchaseSerializer(serializers.ModelSerializer):
+class PaySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Purchase
+        model = Pay
         fields = '__all__'
 
 
