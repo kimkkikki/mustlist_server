@@ -148,14 +148,16 @@ def check_must(request, index):
         return HttpResponse(status=208)
 
     try:
+        # 다시 지움
         must_check = MustCheck.objects.get(must=must, date=today)
         print(must_check)
 
-        # Already Checked
-        return HttpResponse(status=204)
+        must.delete()
+
+        return HttpResponse(status=200)
 
     except ObjectDoesNotExist:
         # Success
         must_check = MustCheck(must_id=index, date=today)
         must_check.save()
-        return HttpResponse(status=200)
+        return HttpResponse(status=201)
