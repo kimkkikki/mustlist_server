@@ -152,7 +152,7 @@ def check_must(request, index):
         must_check = MustCheck.objects.get(must=must, date=today)
         print(must_check)
 
-        must.delete()
+        must_check.delete()
 
         return HttpResponse(status=200)
 
