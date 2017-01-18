@@ -19,6 +19,7 @@ def pay(request):
 
 def payment(request):
     data = JSONParser().parse(request)
+    print(data)
 
     pay_data = data['pay']
     must_data = data['must']

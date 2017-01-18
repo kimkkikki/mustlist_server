@@ -34,6 +34,7 @@ def get(request):
 def post(request):
     try:
         data = JSONParser().parse(request)
+        print(data)
     except ParseError:
         return HttpResponse(status=400)
 
