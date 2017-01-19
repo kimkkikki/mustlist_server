@@ -68,9 +68,7 @@ class MustCheck(models.Model):
         db_table = 'must_check'
     index = models.AutoField(primary_key=True)
     must = models.ForeignKey(Must, db_index=True)
-    date = models.DateField()
     created = models.DateTimeField(auto_now_add=True, null=True)
-    updated = models.DateTimeField(auto_now=True)
 
 
 class Notice(models.Model):

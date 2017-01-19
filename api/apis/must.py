@@ -10,7 +10,7 @@ import pytz
 
 @csrf_exempt
 def must(request):
-    if 'HTTP_ID' not in request.META or 'HTTP_KEY' not in request.META:
+    if 'HTTP_ID' not in request.META or 'HTTP_KEY' not in request.META or 'HTTP_DATE' not in request.META:
         return HttpResponse(status=400)
 
     try:
@@ -19,7 +19,7 @@ def must(request):
         return HttpResponse(status=401)
 
     if request.method == 'GET':
-        return must_list(user)
+        return must_list(request, user)
     elif request.method == 'POST':
         if request.body:
             return create_must(request, user)
@@ -29,17 +29,18 @@ def must(request):
         return HttpResponse(status=404)
 
 
-def must_list(user):
+def must_list(request, user):
+    date = util.try_parsing_date(request.META['HTTP_DATE'])
+
     # musts = Must.objects.filter(user_id=user.id, end_date__gte=datetime.datetime.utcnow())
     musts = Must.objects.filter(user_id=user.id).order_by('end', 'end_date')
 
-    today_min = datetime.datetime.combine(datetime.date.today(), datetime.time.min)
-    today_max = datetime.datetime.combine(datetime.date.today(), datetime.time.max)
+    today_min = datetime.datetime.combine(date, datetime.time.min).replace(tzinfo=date.tzinfo).astimezone(pytz.utc)
+    today_max = datetime.datetime.combine(date, datetime.time.max).replace(tzinfo=date.tzinfo).astimezone(pytz.utc)
 
-    must_check_list = MustCheck.objects.filter(must__in=musts, date__range=(today_min, today_max))
+    must_check_list = MustCheck.objects.filter(must__in=musts, created__range=(today_min, today_max))
 
     serializer = MustSerializer(musts, many=True)
-    today = util.get_today_string()
 
     print(serializer.data)
     for must_object in serializer.data:
@@ -48,24 +49,26 @@ def must_list(user):
         check_count = MustCheck.objects.filter(must_id=must_object['index']).count()
 
         # Update End Must
-        if (end_date < datetime.datetime.utcnow() and must_object['end'] == False):
+        if end_date < datetime.datetime.utcnow() and not must_object['end']:
             update_must = Must.objects.get(index=must_object['index'])
 
             # 80% 이상일때 성공 표기
             if days * 0.8 < check_count:
                 update_must.success = True
+                must_object['success'] = True
                 print('Must Success')
 
             update_must.end = True
             update_must.save()
             print('update Success')
+            must_object['end'] = True
 
-        else:
+        elif not must_object['end']:
             check = False
             for must_check in must_check_list:
-                print(must_check.date)
-                if must_check.must_id == must_object['index'] and str(must_check.date) == today:
+                if must_check.must_id == must_object['index']:
                     check = True
+                    break
 
             must_object['check'] = check
         must_object['check_count'] = check_count
@@ -135,18 +138,14 @@ def must_preview(request):
 
 @csrf_exempt
 def check_must(request, index):
-    if request.method != 'POST':
-        return HttpResponse(status=404)
-
-    if 'HTTP_ID' not in request.META or 'HTTP_KEY' not in request.META:
+    if 'HTTP_ID' not in request.META or 'HTTP_KEY' not in request.META or 'HTTP_DATE' not in request.META:
         return HttpResponse(status=401)
     try:
         user = User.objects.get(id=request.META['HTTP_ID'], key=request.META['HTTP_KEY'])
     except ObjectDoesNotExist:
         return HttpResponse(status=400)
 
-    data = JSONParser().parse(request)
-    date = util.try_parsing_date(data['date'])
+    date = util.try_parsing_date(request.META['HTTP_DATE'])
 
     today_min = datetime.datetime.combine(date, datetime.time.min).replace(tzinfo=date.tzinfo).astimezone(pytz.utc)
     today_max = datetime.datetime.combine(date, datetime.time.max).replace(tzinfo=date.tzinfo).astimezone(pytz.utc)
@@ -157,14 +156,14 @@ def check_must(request, index):
     today = util.get_today_string()
 
     try:
-        must = Must.objects.get(index=index, user=user, start_date__lte=datetime.datetime.now(tz=date.tzinfo).astimezone(pytz.utc), end_date__gte=datetime.datetime.now(tz=date.tzinfo).astimezone(pytz.utc))
+        must_object = Must.objects.get(index=index, user=user, start_date__lte=datetime.datetime.now(tz=date.tzinfo).astimezone(pytz.utc), end_date__gte=datetime.datetime.now(tz=date.tzinfo).astimezone(pytz.utc))
     except ObjectDoesNotExist:
         # 기간이 지남
         return HttpResponse(status=208)
 
     try:
         # 다시 지움
-        must_check = MustCheck.objects.get(must=must, created__range=[today_min, today_max])
+        must_check = MustCheck.objects.get(must=must_object, created__range=[today_min, today_max])
         print(must_check)
 
         must_check.delete()
