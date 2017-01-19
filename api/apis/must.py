@@ -38,9 +38,9 @@ def must_list(request, user):
     today_min = datetime.datetime.combine(date, datetime.time.min).replace(tzinfo=date.tzinfo).astimezone(pytz.utc)
     today_max = datetime.datetime.combine(date, datetime.time.max).replace(tzinfo=date.tzinfo).astimezone(pytz.utc)
 
-    must_check_list = MustCheck.objects.filter(must__in=musts, created__range=(today_min, today_max))
-
     serializer = MustSerializer(musts, many=True)
+
+    in_progress_must_list = []
 
     print(serializer.data)
     for must_object in serializer.data:
@@ -64,15 +64,19 @@ def must_list(request, user):
             must_object['end'] = True
 
         elif not must_object['end']:
-            check = False
-            for must_check in must_check_list:
-                if must_check.must_id == must_object['index']:
-                    check = True
-                    break
+            in_progress_must_list.append(must_object['index'])
+            must_object['check'] = False
 
-            must_object['check'] = check
         must_object['check_count'] = check_count
         must_object['total_count'] = days
+
+    must_check_list = MustCheck.objects.filter(must_id__in=in_progress_must_list, created__range=(today_min, today_max))
+
+    for must_check in must_check_list:
+        for must_object in serializer.data:
+            if must_check.must_id == must_object['index']:
+                must_object['check'] = True
+                break
 
     return util.JSONResponse(serializer.data)
 
