@@ -172,6 +172,6 @@ def check_must(request, index):
 
     except ObjectDoesNotExist:
         # Success
-        must_check = MustCheck(must_id=index, date=today)
+        must_check = MustCheck(must_id=index)
         must_check.save()
         return HttpResponse(status=201)
