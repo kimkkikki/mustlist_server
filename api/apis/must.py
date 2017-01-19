@@ -4,6 +4,7 @@ from . import util
 from django.http import HttpResponse
 from rest_framework.parsers import JSONParser
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Count
 import datetime
 import pytz
 
@@ -34,6 +35,7 @@ def must_list(request, user):
 
     # musts = Must.objects.filter(user_id=user.id, end_date__gte=datetime.datetime.utcnow())
     musts = Must.objects.filter(user_id=user.id).order_by('end', 'end_date')
+    check_count_list = MustCheck.objects.filter(must__in=musts).values('must_id').annotate(count=Count('must_id'))
 
     today_min = datetime.datetime.combine(date, datetime.time.min).replace(tzinfo=date.tzinfo).astimezone(pytz.utc)
     today_max = datetime.datetime.combine(date, datetime.time.max).replace(tzinfo=date.tzinfo).astimezone(pytz.utc)
@@ -46,7 +48,11 @@ def must_list(request, user):
     for must_object in serializer.data:
         end_date = datetime.datetime.strptime(must_object['end_date'], '%Y-%m-%dT%H:%M:%SZ')
         days = util.days(must_object['start_date'], must_object['end_date'])
-        check_count = MustCheck.objects.filter(must_id=must_object['index']).count()
+
+        check_count = 0
+        for count in check_count_list:
+            if count['must_id'] == must_object['index']:
+                check_count = count['count']
 
         # Update End Must
         if end_date < datetime.datetime.utcnow() and not must_object['end']:
