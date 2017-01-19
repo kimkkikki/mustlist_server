@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from rest_framework.parsers import JSONParser
 from django.views.decorators.csrf import csrf_exempt
 import datetime
+import pytz
 
 
 @csrf_exempt
@@ -30,7 +31,7 @@ def must(request):
 
 def must_list(user):
     # musts = Must.objects.filter(user_id=user.id, end_date__gte=datetime.datetime.utcnow())
-    musts = Must.objects.filter(user_id=user.id).order_by('end_date')
+    musts = Must.objects.filter(user_id=user.id).order_by('end', 'end_date')
 
     today_min = datetime.datetime.combine(datetime.date.today(), datetime.time.min)
     today_max = datetime.datetime.combine(datetime.date.today(), datetime.time.max)
@@ -59,13 +60,14 @@ def must_list(user):
             update_must.save()
             print('update Success')
 
-        check = False
-        for must_check in must_check_list:
-            print(must_check.date)
-            if must_check.must_id == must_object['index'] and str(must_check.date) == today:
-                check = True
+        else:
+            check = False
+            for must_check in must_check_list:
+                print(must_check.date)
+                if must_check.must_id == must_object['index'] and str(must_check.date) == today:
+                    check = True
 
-        must_object['check'] = check
+            must_object['check'] = check
         must_object['check_count'] = check_count
         must_object['total_count'] = days
 
@@ -131,7 +133,11 @@ def must_preview(request):
         return HttpResponse(status=400)
 
 
+@csrf_exempt
 def check_must(request, index):
+    if request.method != 'POST':
+        return HttpResponse(status=404)
+
     if 'HTTP_ID' not in request.META or 'HTTP_KEY' not in request.META:
         return HttpResponse(status=401)
     try:
@@ -139,17 +145,23 @@ def check_must(request, index):
     except ObjectDoesNotExist:
         return HttpResponse(status=400)
 
+    data = JSONParser().parse(request)
+    date = util.try_parsing_date(data['date'])
+
+    today_min = datetime.datetime.combine(date, datetime.time.min).astimezone(pytz.utc)
+    today_max = datetime.datetime.combine(date, datetime.time.max).astimezone(pytz.utc)
+
     today = util.get_today_string()
 
     try:
-        must = Must.objects.get(index=index, user=user, start_date__lte=datetime.datetime.utcnow(), end_date__gte=datetime.datetime.utcnow())
+        must = Must.objects.get(index=index, user=user, start_date__lte=datetime.datetime.utcnow().astimezone(pytz.utc), end_date__gte=datetime.datetime.utcnow().astimezone(pytz.utc))
     except ObjectDoesNotExist:
         # 기간이 지남
         return HttpResponse(status=208)
 
     try:
         # 다시 지움
-        must_check = MustCheck.objects.get(must=must, date=today)
+        must_check = MustCheck.objects.get(must=must, created__range=[today_min, today_max])
         print(must_check)
 
         must_check.delete()
