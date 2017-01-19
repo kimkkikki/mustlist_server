@@ -85,3 +85,20 @@ class NoticeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notice
         fields = '__all__'
+
+
+class Score(models.Model):
+    class Meta:
+        db_table = 'score'
+    id = models.AutoField(primary_key=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
+    must = models.ForeignKey(Must, on_delete=models.CASCADE, db_index=True)
+    type = models.CharField(max_length=1, default='C')
+    score = models.IntegerField(default=0)
+    created = models.DateTimeField(auto_now_add=True)
+
+
+class ScoreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Score
+        fields = '__all__'

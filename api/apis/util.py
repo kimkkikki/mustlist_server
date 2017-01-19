@@ -25,13 +25,19 @@ def try_parsing_date(text):
     raise ValueError('no valid date format found')
 
 
+def must_score(diff, deposit):
+    point = deposit * 10 + (diff.days + 1)
+    return point
+
+
+
 def must_point(start_date, end_date, deposit):
     start_date = try_parsing_date(start_date)
     end_date = try_parsing_date(end_date)
 
     date_diff = end_date - start_date
 
-    point = deposit * 100 + (date_diff.days + 1) * 10
+    point = deposit * 10 + (date_diff.days + 1)
 
     return point
 
@@ -43,8 +49,3 @@ def days(start_date, end_date):
     date_diff = end_date - start_date
 
     return date_diff.days + 1
-
-
-def get_today_string():
-    today = datetime.datetime.utcnow().strftime('%Y-%m-%d')
-    return today

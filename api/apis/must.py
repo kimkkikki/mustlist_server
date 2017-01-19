@@ -1,5 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
-from ..models import Must, MustSerializer, MustCheck, User
+from ..models import Must, MustSerializer, MustCheck, User, Score
 from . import util
 from django.http import HttpResponse
 from rest_framework.parsers import JSONParser
@@ -62,6 +62,10 @@ def must_list(request, user):
             if days * 0.8 < check_count:
                 update_must.success = True
                 must_object['success'] = True
+
+                point = util.must_score(update_must.end_date - update_must.start_date, update_must.deposit)
+                score = Score(user_id=user.id, must_id=update_must.index, score=point, type='S')
+                score.save()
                 print('Must Success')
 
             update_must.end = True
@@ -93,8 +97,11 @@ def create_must(request, user):
     serializer = MustSerializer(data=data)
     print(serializer)
     if serializer.is_valid():
-        print(serializer.validated_data)
-        serializer.save()
+        saved_must = serializer.save()
+
+        point = util.must_score(saved_must.end_date - saved_must.start_date, saved_must.deposit)
+        score = Score(user_id=user.id, must_id=saved_must.index, score=point)
+        score.save()
 
         return HttpResponse(status=201)
 
@@ -159,14 +166,10 @@ def check_must(request, index):
 
     today_min = datetime.datetime.combine(date, datetime.time.min).replace(tzinfo=date.tzinfo).astimezone(pytz.utc)
     today_max = datetime.datetime.combine(date, datetime.time.max).replace(tzinfo=date.tzinfo).astimezone(pytz.utc)
-
-    print(today_min)
-    print(today_max)
-
-    today = util.get_today_string()
+    now = datetime.datetime.now(tz=date.tzinfo).astimezone(pytz.utc)
 
     try:
-        must_object = Must.objects.get(index=index, user=user, start_date__lte=datetime.datetime.now(tz=date.tzinfo).astimezone(pytz.utc), end_date__gte=datetime.datetime.now(tz=date.tzinfo).astimezone(pytz.utc))
+        must_object = Must.objects.get(index=index, user=user, start_date__lte=now, end_date__gte=now)
     except ObjectDoesNotExist:
         # 기간이 지남
         return HttpResponse(status=208)
@@ -174,8 +177,6 @@ def check_must(request, index):
     try:
         # 다시 지움
         must_check = MustCheck.objects.get(must=must_object, created__range=[today_min, today_max])
-        print(must_check)
-
         must_check.delete()
 
         return HttpResponse(status=200)
@@ -184,4 +185,5 @@ def check_must(request, index):
         # Success
         must_check = MustCheck(must_id=index)
         must_check.save()
+
         return HttpResponse(status=201)
