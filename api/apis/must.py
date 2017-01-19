@@ -148,8 +148,11 @@ def check_must(request, index):
     data = JSONParser().parse(request)
     date = util.try_parsing_date(data['date'])
 
-    today_min = datetime.datetime.combine(date, datetime.time.min).astimezone(pytz.utc)
-    today_max = datetime.datetime.combine(date, datetime.time.max).astimezone(pytz.utc)
+    today_min = datetime.datetime.combine(date, datetime.time.min).replace(tzinfo=date.tzinfo).astimezone(pytz.utc)
+    today_max = datetime.datetime.combine(date, datetime.time.max).replace(tzinfo=date.tzinfo).astimezone(pytz.utc)
+
+    print(today_min)
+    print(today_max)
 
     today = util.get_today_string()
 
