@@ -157,7 +157,7 @@ def check_must(request, index):
     today = util.get_today_string()
 
     try:
-        must = Must.objects.get(index=index, user=user, start_date__lte=datetime.datetime.utcnow().astimezone(pytz.utc), end_date__gte=datetime.datetime.utcnow().astimezone(pytz.utc))
+        must = Must.objects.get(index=index, user=user, start_date__lte=datetime.datetime.now(tz=date.tzinfo).astimezone(pytz.utc), end_date__gte=datetime.datetime.now(tz=date.tzinfo).astimezone(pytz.utc))
     except ObjectDoesNotExist:
         # 기간이 지남
         return HttpResponse(status=208)
