@@ -15,6 +15,9 @@ def user(request):
     elif request.method == 'POST':
         return post(request)
 
+    elif request.method == 'DELETE':
+        return delete(request)
+
 
 def get(request):
     if 'HTTP_ID' not in request.META or 'HTTP_KEY' not in request.META:
@@ -56,3 +59,17 @@ def post(request):
 
     serializer = UserSerializer(user)
     return util.JSONResponse(serializer.data, status=200)
+
+
+def delete(request):
+    if 'HTTP_ID' not in request.META or 'HTTP_KEY' not in request.META:
+        return HttpResponse(status=400)
+
+    try:
+        user = User.objects.get(id=request.META['HTTP_ID'], key=request.META['HTTP_KEY'])
+        user.delete()
+
+        return HttpResponse(status=200)
+    except ObjectDoesNotExist:
+        print('except')
+        return HttpResponse(status=404)
