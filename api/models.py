@@ -31,7 +31,6 @@ class Must(models.Model):
     deposit = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     default_point = models.IntegerField(default=0)
-    success_point = models.IntegerField(default=0)
     success = models.BooleanField(default=False)
     end = models.BooleanField(default=False)
 
