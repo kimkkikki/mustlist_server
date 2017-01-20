@@ -96,9 +96,3 @@ class Score(models.Model):
     type = models.CharField(max_length=1, default='C')
     score = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
-
-
-class ScoreSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Score
-        fields = '__all__'
