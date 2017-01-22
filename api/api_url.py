@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from .apis import user, must, pay, notice, score
+from .apis import user, must, pay, notice, score, version
 
 urlpatterns = [
     url(r'user$', user.user),
@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'pay$', pay.pay),
     url(r'notice$', notice.notice),
     url(r'score$', score.score),
+    url(r'version$', version.version),
 ]

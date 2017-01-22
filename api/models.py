@@ -110,3 +110,15 @@ class Score(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+
+class Version(models.Model):
+    class Meta:
+        db_table = 'version'
+    id = models.AutoField(primary_key=True, editable=False)
+    version = models.IntegerField(default=0)
+    force = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.version)

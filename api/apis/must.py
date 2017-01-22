@@ -41,12 +41,10 @@ def must_list(request, user):
     today_max = datetime.datetime.combine(date, datetime.time.max).replace(tzinfo=date.tzinfo).astimezone(pytz.utc)
 
     serializer = MustSerializer(musts, many=True)
-
     in_progress_must_list = []
 
-    print(serializer.data)
     for must_object in serializer.data:
-        end_date = datetime.datetime.strptime(must_object['end_date'], '%Y-%m-%dT%H:%M:%SZ')
+        # end_date = datetime.datetime.strptime(must_object['end_date'], '%Y-%m-%dT%H:%M:%SZ')
         days = util.days(must_object['start_date'], must_object['end_date'])
 
         check_count = 0
@@ -55,25 +53,25 @@ def must_list(request, user):
                 check_count = count['count']
 
         # Update End Must
-        if end_date < datetime.datetime.utcnow() and not must_object['end']:
-            update_must = Must.objects.get(index=must_object['index'])
+        # if end_date < datetime.datetime.utcnow() and not must_object['end']:
+        #     update_must = Must.objects.get(index=must_object['index'])
+        #
+        #     # 80% 이상일때 성공 표기
+        #     if days * 0.8 < check_count:
+        #         update_must.success = True
+        #         must_object['success'] = True
+        #
+        #         point = util.must_score(update_must.end_date - update_must.start_date, update_must.deposit)
+        #         score = Score(user_id=user.id, must_id=update_must.index, score=point, type='S')
+        #         score.save()
+        #         print('Must Success')
+        #
+        #     update_must.end = True
+        #     update_must.save()
+        #     print('update Success')
+        #     must_object['end'] = True
 
-            # 80% 이상일때 성공 표기
-            if days * 0.8 < check_count:
-                update_must.success = True
-                must_object['success'] = True
-
-                point = util.must_score(update_must.end_date - update_must.start_date, update_must.deposit)
-                score = Score(user_id=user.id, must_id=update_must.index, score=point, type='S')
-                score.save()
-                print('Must Success')
-
-            update_must.end = True
-            update_must.save()
-            print('update Success')
-            must_object['end'] = True
-
-        elif not must_object['end']:
+        if not must_object['end']:
             in_progress_must_list.append(must_object['index'])
             must_object['check'] = False
 
