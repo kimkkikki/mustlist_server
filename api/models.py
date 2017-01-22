@@ -35,7 +35,7 @@ class Must(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     default_point = models.IntegerField(default=0)
     success = models.BooleanField(default=False)
-    end = models.BooleanField(default=False)
+    end = models.BooleanField(default=False, db_index=True)
 
     def __str__(self):
         return str(self.index)
@@ -59,7 +59,7 @@ class Pay(models.Model):
     date = models.DateTimeField(null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    refund = models.BooleanField(default=False)
+    refund = models.CharField(max_length=1, null=True, blank=True)
 
     def __str__(self):
         return str(self.order_id)
