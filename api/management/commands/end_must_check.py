@@ -10,7 +10,7 @@ class Command(BaseCommand):
     help = 'must end update command'
 
     def handle(self, *args, **options):
-        musts = Must.objects.filter(end=False, end_date__lte=datetime.now().astimezone(pytz.utc))
+        musts = Must.objects.filter(end=False, end_date__lte=datetime.utcnow().replace(tzinfo=pytz.utc))
         must_checks = MustCheck.objects.filter(must__in=musts).values('must_id').annotate(count=Count('must_id'))
         pays = Pay.objects.filter(must__in=musts)
 
