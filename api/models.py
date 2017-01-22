@@ -13,6 +13,9 @@ class User(models.Model):
     device_id = models.TextField(null=True)
     point = models.IntegerField(default=0)
 
+    def __str__(self):
+        return self.id
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -33,6 +36,9 @@ class Must(models.Model):
     default_point = models.IntegerField(default=0)
     success = models.BooleanField(default=False)
     end = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.index)
 
 
 class MustSerializer(serializers.ModelSerializer):
@@ -55,6 +61,9 @@ class Pay(models.Model):
     updated = models.DateTimeField(auto_now=True)
     refund = models.BooleanField(default=False)
 
+    def __str__(self):
+        return str(self.order_id)
+
 
 class PaySerializer(serializers.ModelSerializer):
     class Meta:
@@ -68,6 +77,9 @@ class MustCheck(models.Model):
     index = models.AutoField(primary_key=True)
     must = models.ForeignKey(Must, db_index=True)
     created = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__(self):
+        return str(self.index)
 
 
 class Notice(models.Model):
@@ -95,3 +107,6 @@ class Score(models.Model):
     type = models.CharField(max_length=1, default='C')
     score = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.id)
