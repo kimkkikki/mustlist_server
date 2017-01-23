@@ -36,6 +36,7 @@ def must_list(request, user, page):
         page = 0
     else:
         page = int(page) * limit
+        limit = page + limit
 
     date = util.try_parsing_date(request.META['HTTP_DATE'])
 
