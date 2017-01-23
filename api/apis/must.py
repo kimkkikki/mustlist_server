@@ -20,7 +20,7 @@ def must(request):
         return HttpResponse(status=401)
 
     if request.method == 'GET':
-        return must_list(request, user)
+        return must_list(request, user, request.GET.get('page'))
     elif request.method == 'POST':
         if request.body:
             return create_must(request, user)
@@ -30,11 +30,16 @@ def must(request):
         return HttpResponse(status=404)
 
 
-def must_list(request, user):
+def must_list(request, user, page):
+    limit = 10
+    if not page:
+        page = 0
+    else:
+        page = int(page) * limit
+
     date = util.try_parsing_date(request.META['HTTP_DATE'])
 
-    # musts = Must.objects.filter(user_id=user.id, end_date__gte=datetime.datetime.utcnow())
-    musts = Must.objects.filter(user_id=user.id).order_by('end', 'end_date')
+    musts = Must.objects.filter(user_id=user.id).order_by('end', 'end_date')[page:limit]
     check_count_list = MustCheck.objects.filter(must__in=musts).values('must_id').annotate(count=Count('must_id'))
 
     today_min = datetime.datetime.combine(date, datetime.time.min).replace(tzinfo=date.tzinfo).astimezone(pytz.utc)
@@ -44,32 +49,12 @@ def must_list(request, user):
     in_progress_must_list = []
 
     for must_object in serializer.data:
-        # end_date = datetime.datetime.strptime(must_object['end_date'], '%Y-%m-%dT%H:%M:%SZ')
         days = util.days(must_object['start_date'], must_object['end_date'])
 
         check_count = 0
         for count in check_count_list:
             if count['must_id'] == must_object['index']:
                 check_count = count['count']
-
-        # Update End Must
-        # if end_date < datetime.datetime.utcnow() and not must_object['end']:
-        #     update_must = Must.objects.get(index=must_object['index'])
-        #
-        #     # 80% 이상일때 성공 표기
-        #     if days * 0.8 < check_count:
-        #         update_must.success = True
-        #         must_object['success'] = True
-        #
-        #         point = util.must_score(update_must.end_date - update_must.start_date, update_must.deposit)
-        #         score = Score(user_id=user.id, must_id=update_must.index, score=point, type='S')
-        #         score.save()
-        #         print('Must Success')
-        #
-        #     update_must.end = True
-        #     update_must.save()
-        #     print('update Success')
-        #     must_object['end'] = True
 
         if not must_object['end']:
             in_progress_must_list.append(must_object['index'])
