@@ -23,9 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '_43z30@ukw+#@qp=y&b1*f(@c^el3wcsfuv++*_d0*svxy)bp@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['questcompany.io', 'www.questcompany.io']
 
 
 # Application definition
@@ -127,4 +127,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = '/home/ubuntu/mustlist_django'
+STATIC_ROOT = '/home/ubuntu/mustlist_django/static'
