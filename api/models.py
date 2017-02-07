@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib import admin
 import uuid
 from rest_framework import serializers
 
@@ -21,6 +22,11 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
+
+
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('id', 'email', 'created')
+    list_filter = ('created_at')
 
 
 class Must(models.Model):
@@ -47,6 +53,10 @@ class MustSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class MustAdmin(admin.ModelAdmin):
+    list_display = ('index', 'title', 'start_date', 'end_date', 'deposit', 'created', 'success', 'end')
+
+
 class Pay(models.Model):
     class Meta:
         db_table = 'pay'
@@ -71,6 +81,10 @@ class PaySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class PayAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'must', 'order_id', 'date', 'created', 'refund')
+
+
 class MustCheck(models.Model):
     class Meta:
         db_table = 'must_check'
@@ -80,6 +94,10 @@ class MustCheck(models.Model):
 
     def __str__(self):
         return str(self.index)
+
+
+class MustCheckAdmin(admin.ModelAdmin):
+    list_display = ('index', 'must', 'created')
 
 
 class Notice(models.Model):
@@ -98,6 +116,10 @@ class NoticeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class NoticeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'type', 'title', 'created')
+
+
 class Score(models.Model):
     class Meta:
         db_table = 'score'
@@ -112,6 +134,10 @@ class Score(models.Model):
         return str(self.id)
 
 
+class ScoreAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'must', 'type', 'score', 'created')
+
+
 class Version(models.Model):
     class Meta:
         db_table = 'version'
@@ -122,3 +148,7 @@ class Version(models.Model):
 
     def __str__(self):
         return str(self.version)
+
+
+class VersionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'version', 'force', 'created')
