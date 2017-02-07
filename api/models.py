@@ -26,7 +26,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ('id', 'email', 'created')
-    list_filter = ('created_at')
+    list_filter = 'created'
 
 
 class Must(models.Model):
